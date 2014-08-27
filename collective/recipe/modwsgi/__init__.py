@@ -32,6 +32,9 @@ try:
     fileConfig(configfile)
 except configparser.NoSectionError:
     pass
+
+%(gevent_monkey_patch)s
+
 application = loadapp("config:" + configfile, name=%(app_name)s)
 """
 
@@ -70,10 +73,24 @@ class Recipe(object):
         if app_name is not None:
             app_name = '"%s"' % app_name
 
+        gevent_patch_enabled = self.options.get('gevent-monkey-patch', None)
+        # TODO: would be nice to also support selective patching, e.g. just
+        # socket or just threading
+        gevent_patch = ''
+        if gevent_patch_enabled.lower() in ('true', 'yes'):
+            gevent_patch = """
+try:
+    import gevent.monkey
+    gevent.monkey.patch_all()
+except ImportError:
+    pass
+"""
+
         output = WRAPPER_TEMPLATE % dict(
             config=self.options["config-file"],
             syspath=",\n    ".join((repr(p) for p in path)),
-            app_name=app_name
+            app_name=app_name,
+            gevent_monkey_patch=gevent_patch
             )
 
         target = self.options.get("target")
