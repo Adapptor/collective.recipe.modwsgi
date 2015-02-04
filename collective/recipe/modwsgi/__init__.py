@@ -73,7 +73,7 @@ class Recipe(object):
         if app_name is not None:
             app_name = '"%s"' % app_name
 
-        gevent_patch_enabled = self.options.get('gevent-monkey-patch', None)
+        gevent_patch_enabled = self.options.get('gevent-monkey-patch', '')
         # TODO: would be nice to also support selective patching, e.g. just
         # socket or just threading
         gevent_patch = ''
